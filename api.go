@@ -46,7 +46,7 @@ func NewWithAfterResponseHandler(apiToken string, afterResponseHandler func(*htt
 func new(apiToken string, afterResponseHandler func(*http.Response), options ...ClientOption) (*Api, error) {
 	c := Api{}
 	restyClient := newClient(apiToken)
-	restyClient.Client = c.httpClient.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
+	restyClient.Client = restyClient.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
 		if afterResponseHandler != nil {
 			afterResponseHandler(response.RawResponse)
 		}
