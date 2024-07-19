@@ -2,6 +2,7 @@ package lokalise
 
 import (
 	"errors"
+	"net/http"
 	"time"
 )
 
@@ -35,9 +36,24 @@ type Api struct {
 type ClientOption func(*Api) error
 
 func New(apiToken string, options ...ClientOption) (*Api, error) {
-	c := Api{}
-	c.httpClient = newClient(apiToken)
+	return new(apiToken, nil, options...)
+}
 
+func NewWithAfterResponseHandler(apiToken string, afterResponseHandler func(*http.Response), options ...ClientOption) (*Api, error) {
+	return new(apiToken, afterResponseHandler, options...)
+}
+func new(apiToken string, afterResponseHandler func(*http.Response), options ...ClientOption) (*Api, error) {
+	c := Api{}
+	restyClient := newClient(apiToken)
+	restyClient.Client = c.httpClient.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
+		if afterResponseHandler != nil {
+			afterResponseHandler(response.RawResponse)
+		}
+		return nil
+
+	})
+
+	c.httpClient = restyClient
 	for _, o := range options {
 		err := o(&c)
 		if err != nil {
