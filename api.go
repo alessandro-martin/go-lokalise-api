@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"github.com/go-resty/resty/v2"
 )
 
 type Api struct {
